@@ -1,0 +1,2 @@
+# This file ensures the temp directory is tracked in git
+# Temporary files for PDF conversion will be stored here 

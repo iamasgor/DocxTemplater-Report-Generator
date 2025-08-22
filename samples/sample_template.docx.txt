@@ -1,0 +1,68 @@
+SAMPLE DOCX TEMPLATE CONTENT
+
+This is a text representation of what your .docx template should contain.
+Create a Word document (.docx) with the following content and upload it.
+
+===============================================
+REPORT: {reportType}
+===============================================
+Generated on: {generatedDate}
+
+FILTERS APPLIED:
+- From Date: {filters.fromDate || 'All'}
+- To Date: {filters.toDate || 'All'}
+- Type: {filters.type || 'All'}
+
+===============================================
+SUMMARY
+===============================================
+Total Records: {summary.totalRecords}
+Generated At: {summary.generatedAt}
+
+{#if summary.totalAmount}
+Total Amount: ${summary.totalAmount}
+Average Amount: ${summary.averageAmount}
+{/if}
+
+{#if summary.totalQuantity}
+Total Quantity: {summary.totalQuantity}
+Average Quantity: {summary.averageQuantity}
+{/if}
+
+{#if summary.uniqueCustomers}
+Unique Customers: {summary.uniqueCustomers}
+{/if}
+
+{#if summary.recentOrders}
+Recent Orders (30 days): {summary.recentOrders}
+{/if}
+
+===============================================
+DETAILED DATA
+===============================================
+
+{#data}
+Record {#index + 1}:
+- Name: {name}
+- Amount: ${amount || 'N/A'}
+- Quantity: {quantity || 'N/A'}
+- Type: {type || 'N/A'}
+- Created Date: {created_date || 'N/A'}
+- Updated Date: {updated_date || 'N/A'}
+{#if total}
+- Total: ${total}
+{/if}
+
+---
+{/data}
+
+===============================================
+END OF REPORT
+===============================================
+
+Notes:
+- Replace the placeholders in curly braces with your actual data fields
+- Use {#data} and {/data} for looping through data arrays
+- Use {#if condition} and {/if} for conditional content
+- Use {#index} to get the current index in loops
+- The template will be automatically populated with data from your Oracle database 
