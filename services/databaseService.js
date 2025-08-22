@@ -4,30 +4,41 @@ class DatabaseService {
   constructor() {
     this.connection = null;
     this.isInitialized = false;
+    this.useConnectionPool = true;
   }
 
   async initialize() {
     try {
       // Use thin mode - no Oracle Client required
-      oracledb.initOracleClient({ libDir: null });
+      // For newer versions of OracleDB, thin mode is the default
+      // We don't need to call initOracleClient for thin mode
+      console.log('Using OracleDB thin mode (no Oracle Client required)');
       
-      // Create connection pool
-      await oracledb.createPool({
-        user: process.env.ORACLE_USER,
-        password: process.env.ORACLE_PASSWORD,
-        connectString: `${process.env.ORACLE_HOST}:${process.env.ORACLE_PORT}/${process.env.ORACLE_SERVICE}`,
-        poolMin: 2,
-        poolMax: 10,
-        poolIncrement: 1,
-        // Thin mode specific options
-        events: false,
-        queueTimeout: 60000
-      });
+      // Try to create connection pool first
+      try {
+        await oracledb.createPool({
+          user: process.env.ORACLE_USER,
+          password: process.env.ORACLE_PASSWORD,
+          connectString: `${process.env.ORACLE_HOST}:${process.env.ORACLE_PORT}/${process.env.ORACLE_SERVICE}`,
+          poolMin: 2,
+          poolMax: 10,
+          poolIncrement: 1,
+          // Thin mode specific options
+          events: false,
+          queueTimeout: 60000
+        });
 
-      this.isInitialized = true;
-      console.log('Oracle connection pool created successfully (thin mode)');
+        this.isInitialized = true;
+        this.useConnectionPool = true;
+        console.log('Oracle connection pool created successfully (thin mode)');
+      } catch (poolError) {
+        console.warn('Failed to create connection pool, falling back to direct connections:', poolError.message);
+        this.useConnectionPool = false;
+        this.isInitialized = true;
+        console.log('Using direct connections (no connection pool)');
+      }
     } catch (error) {
-      console.error('Failed to initialize Oracle connection pool:', error);
+      console.error('Failed to initialize Oracle database service:', error);
       throw error;
     }
   }
@@ -38,7 +49,16 @@ class DatabaseService {
     }
     
     try {
-      return await oracledb.getConnection();
+      if (this.useConnectionPool) {
+        return await oracledb.getConnection();
+      } else {
+        // Fallback to direct connection
+        return await oracledb.getConnection({
+          user: process.env.ORACLE_USER,
+          password: process.env.ORACLE_PASSWORD,
+          connectString: `${process.env.ORACLE_HOST}:${process.env.ORACLE_PORT}/${process.env.ORACLE_SERVICE}`
+        });
+      }
     } catch (error) {
       console.error('Failed to get database connection:', error);
       throw error;
@@ -106,11 +126,13 @@ class DatabaseService {
   }
 
   async closePool() {
-    try {
-      await oracledb.getPool().close();
-      console.log('Oracle connection pool closed');
-    } catch (error) {
-      console.error('Error closing connection pool:', error);
+    if (this.useConnectionPool) {
+      try {
+        await oracledb.getPool().close();
+        console.log('Oracle connection pool closed');
+      } catch (error) {
+        console.error('Error closing connection pool:', error);
+      }
     }
   }
 }

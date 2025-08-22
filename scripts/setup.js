@@ -63,6 +63,7 @@ try {
   require('oracledb');
   console.log('✅ Oracle client package found');
   console.log('ℹ️  The application will use thin mode (no Oracle Client installation required)');
+  console.log('ℹ️  Thin mode is the default in OracleDB 6.0+');
 } catch (error) {
   console.log('❌ Oracle client package not found');
   console.log('Please install dependencies: npm install');
@@ -86,15 +87,17 @@ exec('libreoffice --version', (error, stdout, stderr) => {
 console.log('\n📋 Next steps:');
 console.log('1. Configure your .env file with Oracle database credentials');
 console.log('2. Install dependencies: npm install');
-console.log('3. Start the server: npm run dev');
-console.log('4. Upload a template using POST /upload-template');
-console.log('5. Generate reports using GET /generate?report=yourType');
+console.log('3. Test database connection: npm run test-connection');
+console.log('4. Start the server: npm run dev');
+console.log('5. Upload a template using POST /upload-template');
+console.log('6. Generate reports using GET /generate?report=yourType');
 
 console.log('\n💡 Benefits of thin mode:');
 console.log('- No Oracle Client installation required');
 console.log('- Easier deployment and setup');
 console.log('- Better portability across environments');
 console.log('- Direct network connection to Oracle database');
+console.log('- Thin mode is the default in OracleDB 6.0+');
 
 console.log('\n📚 For more information, see README.md');
 console.log('🎉 Setup complete!\n'); 

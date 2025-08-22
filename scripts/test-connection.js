@@ -31,10 +31,9 @@ async function testConnection() {
     console.log(`   User: ${process.env.ORACLE_USER}`);
     console.log(`   Password: ${process.env.ORACLE_PASSWORD ? '***' : 'NOT SET'}\n`);
 
-    // Initialize Oracle client in thin mode
-    console.log('🚀 Initializing Oracle client in thin mode...');
-    oracledb.initOracleClient({ libDir: null });
-    console.log('✅ Oracle client initialized in thin mode\n');
+    // OracleDB thin mode is the default in newer versions
+    console.log('🚀 Using OracleDB thin mode (no Oracle Client required)');
+    console.log('✅ Oracle client ready for thin mode connection\n');
 
     // Test connection
     console.log('🔌 Testing database connection...');
