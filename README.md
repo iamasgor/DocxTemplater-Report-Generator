@@ -358,4 +358,4 @@ MIT License
 
 ## Support
 
-For issues and questions, please check the troubleshooting section or create an issue in the repository. 
+For issues and questions, please check the troubleshooting section or create an issue in the repository. Thank you!
