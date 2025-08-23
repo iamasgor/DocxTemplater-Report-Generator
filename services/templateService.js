@@ -20,7 +20,7 @@ class TemplateService {
     }
   }
 
-  async saveTemplate(file, reportType) {
+  async saveTemplate(file, reportType, templateName = null) {
     try {
       // Generate unique filename
       const fileExtension = path.extname(file.originalname);
@@ -37,6 +37,7 @@ class TemplateService {
         filename,
         filePath,
         reportType,
+        templateName: templateName || file.originalname.replace('.docx', ''),
         originalName: file.originalname,
         uploadDate: new Date(),
         size: file.size
@@ -44,7 +45,7 @@ class TemplateService {
 
       this.templates.set(uniqueId, templateInfo);
 
-      console.log(`Template saved: ${filename} for report type: ${reportType}`);
+      console.log(`Template saved: ${filename} for report type: ${reportType} with name: ${templateInfo.templateName}`);
       return templateInfo;
     } catch (error) {
       console.error('Error saving template:', error);
@@ -52,16 +53,27 @@ class TemplateService {
     }
   }
 
-  async getTemplate(reportType) {
+  async getTemplate(reportType, templateName = null) {
     try {
-      // Find template by report type
+      // Find template by report type and optionally by name
       for (const [id, template] of this.templates) {
         if (template.reportType === reportType) {
-          return template;
+          if (templateName) {
+            if (template.templateName === templateName) {
+              return template;
+            }
+          } else {
+            // Return first template found for this report type
+            return template;
+          }
         }
       }
       
-      throw new Error(`No template found for report type: ${reportType}`);
+      if (templateName) {
+        throw new Error(`No template found for report type: ${reportType} with name: ${templateName}`);
+      } else {
+        throw new Error(`No template found for report type: ${reportType}`);
+      }
     } catch (error) {
       console.error('Error getting template:', error);
       throw error;
@@ -95,6 +107,21 @@ class TemplateService {
 
   async getAllTemplates() {
     return Array.from(this.templates.values());
+  }
+
+  async getTemplatesByReportType(reportType) {
+    const templates = [];
+    for (const [id, template] of this.templates) {
+      if (template.reportType === reportType) {
+        templates.push(template);
+      }
+    }
+    return templates;
+  }
+
+  async getTemplateNames(reportType) {
+    const templates = await this.getTemplatesByReportType(reportType);
+    return templates.map(t => t.templateName);
   }
 
   async deleteTemplate(templateId) {

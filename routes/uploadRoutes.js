@@ -35,8 +35,12 @@ router.post('/', upload.single('template'), async (req, res, next) => {
     // Validate file
     templateService.validateTemplateFile(req.file);
 
-    // Save template
-    const templateInfo = await templateService.saveTemplate(req.file, req.body.reportType);
+    // Save template with optional template name
+    const templateInfo = await templateService.saveTemplate(
+      req.file, 
+      req.body.reportType, 
+      req.body.templateName
+    );
 
     res.status(201).json({
       message: 'Template uploaded successfully',
@@ -44,6 +48,7 @@ router.post('/', upload.single('template'), async (req, res, next) => {
         id: templateInfo.id,
         filename: templateInfo.filename,
         reportType: templateInfo.reportType,
+        templateName: templateInfo.templateName,
         originalName: templateInfo.originalName,
         uploadDate: templateInfo.uploadDate,
         size: templateInfo.size
@@ -63,6 +68,7 @@ router.get('/', async (req, res, next) => {
         id: template.id,
         filename: template.filename,
         reportType: template.reportType,
+        templateName: template.templateName,
         originalName: template.originalName,
         uploadDate: template.uploadDate,
         size: template.size
@@ -89,6 +95,7 @@ router.get('/:id', async (req, res, next) => {
         id: template.id,
         filename: template.filename,
         reportType: template.reportType,
+        templateName: template.templateName,
         originalName: template.originalName,
         uploadDate: template.uploadDate,
         size: template.size
@@ -122,6 +129,7 @@ router.get('/report-type/:type', async (req, res, next) => {
       templates: filteredTemplates.map(template => ({
         id: template.id,
         filename: template.filename,
+        templateName: template.templateName,
         originalName: template.originalName,
         uploadDate: template.uploadDate,
         size: template.size

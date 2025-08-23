@@ -6,7 +6,7 @@ const router = express.Router();
 // GET /generate - Generate a report based on parameters
 router.get('/', async (req, res, next) => {
   try {
-    const { report, fromDate, toDate, type, ...otherFilters } = req.query;
+    const { report, templateName, fromDate, toDate, type, ...otherFilters } = req.query;
     
     // Validate required parameters
     if (!report) {
@@ -32,8 +32,8 @@ router.get('/', async (req, res, next) => {
       });
     }
 
-    // Generate the report
-    const reportResult = await reportService.generateReport(report, filters);
+    // Generate the report using the model-based approach
+    const reportResult = await reportService.generateReport(report, filters, templateName);
 
     // Set response headers for PDF download
     res.setHeader('Content-Type', reportResult.contentType);
@@ -63,11 +63,44 @@ router.get('/available-types', async (req, res, next) => {
   }
 });
 
+// GET /generate/templates/:reportType - Get available templates for a specific report type
+router.get('/templates/:reportType', async (req, res, next) => {
+  try {
+    const { reportType } = req.params;
+    
+    // Validate report type
+    if (!reportService.validateReportRequest(reportType, {})) {
+      return res.status(400).json({ 
+        error: `Invalid report type: ${reportType}` 
+      });
+    }
+
+    const templateService = require('../services/templateService');
+    const templates = await templateService.getTemplatesByReportType(reportType);
+    
+    res.json({
+      reportType,
+      templates: templates.map(t => ({
+        id: t.id,
+        name: t.templateName,
+        filename: t.filename,
+        uploadDate: t.uploadDate,
+        size: t.size
+      })),
+      message: templates.length > 0 
+        ? `${templates.length} template(s) available for ${reportType}` 
+        : `No templates available for ${reportType}`
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // GET /generate/preview/:reportType - Preview report data without generating PDF
 router.get('/preview/:reportType', async (req, res, next) => {
   try {
     const { reportType } = req.params;
-    const { fromDate, toDate, type, ...otherFilters } = req.query;
+    const { templateName, fromDate, toDate, type, ...otherFilters } = req.query;
     
     const filters = {
       fromDate,
@@ -85,15 +118,19 @@ router.get('/preview/:reportType', async (req, res, next) => {
       });
     }
 
-    // Fetch data only (no PDF generation)
+    // Fetch data only (no PDF generation) using the model
     const data = await reportService.fetchReportData(reportType, filters);
-    const summary = reportService.generateSummary(data, reportType);
+    
+    // Get available templates for this report type
+    const templateService = require('../services/templateService');
+    const availableTemplates = await templateService.getTemplateNames(reportType);
 
     res.json({
       reportType,
+      templateName,
+      availableTemplates,
       filters,
       dataCount: data.length,
-      summary,
       sampleData: data.slice(0, 5), // Show first 5 records as sample
       message: 'Data preview generated successfully'
     });
@@ -174,7 +211,7 @@ router.post('/batch', async (req, res, next) => {
 
     for (const reportRequest of reports) {
       try {
-        const { report, filters = {} } = reportRequest;
+        const { report, templateName, filters = {} } = reportRequest;
         
         if (!report) {
           errors.push({ report: 'unknown', error: 'Report type is required' });
@@ -191,9 +228,10 @@ router.post('/batch', async (req, res, next) => {
           continue;
         }
 
-        const reportResult = await reportService.generateReport(report, filters);
+        const reportResult = await reportService.generateReport(report, filters, templateName);
         results.push({
           report,
+          templateName: reportResult.templateName,
           filename: reportResult.filename,
           size: reportResult.pdfBuffer.length,
           status: 'success'

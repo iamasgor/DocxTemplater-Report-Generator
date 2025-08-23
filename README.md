@@ -4,13 +4,15 @@ A Node.js application for generating reports from Oracle database data using DOC
 
 ## Features
 
+- **Model-Based Architecture**: Clean separation of concerns with dedicated models for each report type
 - **Oracle Database Integration**: Connect to Oracle databases using thin mode (no Oracle Client required)
-- **Template Management**: Upload and manage .docx templates for different report types
+- **Template Management**: Upload and manage .docx templates with custom names for organized output
 - **Report Generation**: Generate reports by populating templates with database data
 - **PDF Conversion**: Convert generated DOCX files to PDF format
 - **Flexible Filtering**: Support for date ranges, types, and custom filters
 - **Batch Processing**: Generate multiple reports in a single request
 - **RESTful API**: Clean and intuitive API endpoints
+- **Extensible Design**: Easy to add new report types and models
 
 ## Tech Stack
 
@@ -21,6 +23,7 @@ A Node.js application for generating reports from Oracle database data using DOC
 - **Multer** - File upload handling
 - **Helmet** - Security middleware
 - **CORS** - Cross-origin resource sharing
+- **Model-Based Architecture** - Clean separation of data, business logic, and presentation
 
 ## Prerequisites
 
@@ -94,6 +97,24 @@ LIBREOFFICE_PATH=/usr/bin/libreoffice
 ```bash
 npm run setup
 ```
+
+## Architecture
+
+This application uses a **Model-Based Architecture** that provides:
+
+- **Models** (`/models/`): Handle data fetching, transformation, and business logic for each report type
+- **Services** (`/services/`): Orchestrate the report generation process and manage templates
+- **Routes** (`/routes/`): Handle HTTP requests and responses
+- **Factory Pattern**: Centralized model management for easy extensibility
+
+### Key Benefits
+
+1. **Separation of Concerns**: Clear boundaries between data, business logic, and presentation
+2. **Extensibility**: Easy to add new report types by creating new models
+3. **Maintainability**: Well-structured code that's easy to understand and modify
+4. **Template Flexibility**: Support for multiple templates per report type with custom names
+
+For detailed architecture information, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ## Usage
 
